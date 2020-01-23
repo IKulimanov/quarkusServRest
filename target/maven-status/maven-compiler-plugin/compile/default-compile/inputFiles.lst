@@ -1,5 +1,8 @@
-/home/ivan/q-start/src/main/java/ru/rsatu/dologin/LoginResponse.java
-/home/ivan/q-start/src/main/java/ru/rsatu/getSum/getSumRequest.java
-/home/ivan/q-start/src/main/java/ru/rsatu/dologin/LoginRequest.java
-/home/ivan/q-start/src/main/java/ru/rsatu/Gate.java
-/home/ivan/q-start/src/main/java/ru/rsatu/getSum/getSumResponse.java
+/home/ivan/quarkusServRest/src/main/java/ru/rsatu/getSum/getSumResponse.java
+/home/ivan/quarkusServRest/src/main/java/ru/rsatu/dologin/LoginResponse.java
+/home/ivan/quarkusServRest/src/main/java/ru/rsatu/Gate.java
+/home/ivan/quarkusServRest/src/main/java/ru/rsatu/getSum/getSumRequest.java
+/home/ivan/quarkusServRest/src/main/java/ru/rsatu/dologin/LoginRequest.java
+/home/ivan/quarkusServRest/src/main/java/ru/rsatu/models/ReqPetEntity.java
+/home/ivan/quarkusServRest/src/main/java/ru/rsatu/models/UsersEntity.java
+/home/ivan/quarkusServRest/src/main/java/ru/rsatu/models/PetsEntity.java

@@ -1,2 +1,8 @@
+ru/rsatu/models/UsersEntity.class
 ru/rsatu/getSum/getSumResponse.class
 ru/rsatu/getSum/getSumRequest.class
+ru/rsatu/dologin/LoginRequest.class
+ru/rsatu/Gate.class
+ru/rsatu/dologin/LoginResponse.class
+ru/rsatu/models/PetsEntity.class
+ru/rsatu/models/ReqPetEntity.class
