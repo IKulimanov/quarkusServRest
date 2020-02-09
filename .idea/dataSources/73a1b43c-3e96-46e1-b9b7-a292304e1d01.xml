@@ -3,17 +3,17 @@
   <database-model serializer="dbm" dbms="POSTGRES" family-id="POSTGRES" format-version="4.17">
     <root id="1">
       <ServerVersion>10.10</ServerVersion>
-      <StartupTime>1579626796</StartupTime>
+      <StartupTime>1581157580</StartupTime>
     </root>
     <database id="2" parent="1" name="postgres">
       <ObjectId>13057</ObjectId>
       <Comment>default administrative connection database</Comment>
       <Owner>postgres</Owner>
-      <IntrospectionStateNumber>626</IntrospectionStateNumber>
+      <IntrospectionStateNumber>733</IntrospectionStateNumber>
       <Current>1</Current>
-      <Relations>sequence|table|16414|16416|1
+      <Relations>sequence|table|16384|16386|1
 sequence|table|16405|16407|1
-sequence|table|16384|16386|1
+sequence|table|16414|16416|1
 </Relations>
     </database>
     <role id="3" parent="1" name="pg_monitor">
@@ -56,7 +56,7 @@ sequence|table|16384|16386|1
       <Comment>standard public schema</Comment>
       <StateNumber>351</StateNumber>
       <Owner>postgres</Owner>
-      <IntrospectionStateNumber>627</IntrospectionStateNumber>
+      <IntrospectionStateNumber>734</IntrospectionStateNumber>
       <Current>1</Current>
     </schema>
     <access-method id="12" parent="2" name="btree">
@@ -142,19 +142,24 @@ sequence|table|16384|16386|1
     <table id="22" parent="11" name="pets">
       <ObjectId>16407</ObjectId>
       <Owner>postgres</Owner>
-      <StateNumber>559</StateNumber>
+      <StateNumber>732</StateNumber>
     </table>
-    <table id="23" parent="11" name="req_pet">
+    <table id="23" parent="11" name="req_give_pet">
+      <ObjectId>32773</ObjectId>
+      <Owner>postgres</Owner>
+      <StateNumber>726</StateNumber>
+    </table>
+    <table id="24" parent="11" name="req_pet">
       <ObjectId>16416</ObjectId>
       <Owner>postgres</Owner>
-      <StateNumber>559</StateNumber>
+      <StateNumber>729</StateNumber>
     </table>
-    <table id="24" parent="11" name="users">
+    <table id="25" parent="11" name="users">
       <ObjectId>16386</ObjectId>
       <Owner>postgres</Owner>
-      <StateNumber>559</StateNumber>
+      <StateNumber>708</StateNumber>
     </table>
-    <column id="25" parent="22" name="pet_id">
+    <column id="26" parent="22" name="pet_id">
       <Position>1</Position>
       <DataType>integer|0s</DataType>
       <NotNull>1</NotNull>
@@ -162,51 +167,128 @@ sequence|table|16384|16386|1
       <DefaultExpression>nextval(&apos;pets_pet_id_seq&apos;::regclass)</DefaultExpression>
       <TypeId>23</TypeId>
     </column>
-    <column id="26" parent="22" name="name">
+    <column id="27" parent="22" name="name">
       <Position>2</Position>
       <DataType>varchar(25)|0s</DataType>
       <StateNumber>558</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="27" parent="22" name="age_pet">
+    <column id="28" parent="22" name="age">
       <Position>3</Position>
       <DataType>integer|0s</DataType>
-      <StateNumber>558</StateNumber>
+      <StateNumber>666</StateNumber>
       <TypeId>23</TypeId>
     </column>
-    <column id="28" parent="22" name="type">
+    <column id="29" parent="22" name="type">
       <Position>4</Position>
       <DataType>varchar(25)|0s</DataType>
       <StateNumber>558</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="29" parent="22" name="rec_date">
-      <Position>5</Position>
-      <DataType>date|0s</DataType>
-      <StateNumber>558</StateNumber>
-      <TypeId>1082</TypeId>
+    <column id="30" parent="22" name="gender">
+      <Position>6</Position>
+      <DataType>varchar(255)|0s</DataType>
+      <StateNumber>732</StateNumber>
+      <TypeId>1043</TypeId>
     </column>
-    <index id="30" parent="22" name="pets_pkey">
+    <column id="31" parent="22" name="photo">
+      <Position>7</Position>
+      <DataType>varchar(255)|0s</DataType>
+      <StateNumber>687</StateNumber>
+      <TypeId>1043</TypeId>
+    </column>
+    <column id="32" parent="22" name="active">
+      <Position>8</Position>
+      <DataType>boolean|0s</DataType>
+      <StateNumber>705</StateNumber>
+      <DefaultExpression>true</DefaultExpression>
+      <TypeId>16</TypeId>
+    </column>
+    <index id="33" parent="22" name="pets_pkey">
       <ObjectId>16412</ObjectId>
-      <StateNumber>558</StateNumber>
+      <StateNumber>732</StateNumber>
       <ColNames>pet_id</ColNames>
       <Unique>1</Unique>
       <Primary>1</Primary>
     </index>
-    <key id="31" parent="22" name="pets_pkey">
+    <key id="34" parent="22" name="pets_pkey">
       <ObjectId>16413</ObjectId>
       <StateNumber>558</StateNumber>
       <ColNames>pet_id</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>pets_pkey</UnderlyingIndexName>
     </key>
-    <check id="32" parent="22" name="pets_type_check">
+    <check id="35" parent="22" name="pets_type_check">
       <ObjectId>16411</ObjectId>
       <StateNumber>558</StateNumber>
       <ColNames>type</ColNames>
       <Predicate>(type)::text = ANY ((ARRAY[&apos;dog&apos;::character varying, &apos;cat&apos;::character varying, &apos;bird&apos;::character varying, &apos;rodent&apos;::character varying, &apos;reptile&apos;::character varying, &apos;bag&apos;::character varying])::text[])</Predicate>
     </check>
-    <column id="33" parent="23" name="reqpet_id">
+    <column id="36" parent="23" name="namepet">
+      <Position>1</Position>
+      <DataType>varchar(255)|0s</DataType>
+      <StateNumber>669</StateNumber>
+      <TypeId>1043</TypeId>
+    </column>
+    <column id="37" parent="23" name="id_req_gp">
+      <Position>2</Position>
+      <DataType>integer|0s</DataType>
+      <NotNull>1</NotNull>
+      <StateNumber>669</StateNumber>
+      <TypeId>23</TypeId>
+    </column>
+    <column id="38" parent="23" name="agepet">
+      <Position>3</Position>
+      <DataType>integer|0s</DataType>
+      <StateNumber>669</StateNumber>
+      <TypeId>23</TypeId>
+    </column>
+    <column id="39" parent="23" name="gender_pet">
+      <Position>4</Position>
+      <DataType>varchar(255)|0s</DataType>
+      <StateNumber>669</StateNumber>
+      <TypeId>1043</TypeId>
+    </column>
+    <column id="40" parent="23" name="type_pet">
+      <Position>5</Position>
+      <DataType>varchar(255)|0s</DataType>
+      <StateNumber>669</StateNumber>
+      <TypeId>1043</TypeId>
+    </column>
+    <column id="41" parent="23" name="id_user">
+      <Position>6</Position>
+      <DataType>integer|0s</DataType>
+      <StateNumber>672</StateNumber>
+      <TypeId>23</TypeId>
+    </column>
+    <column id="42" parent="23" name="active">
+      <Position>7</Position>
+      <DataType>boolean|0s</DataType>
+      <StateNumber>714</StateNumber>
+      <DefaultExpression>true</DefaultExpression>
+      <TypeId>16</TypeId>
+    </column>
+    <column id="43" parent="23" name="status">
+      <Position>8</Position>
+      <DataType>integer|0s</DataType>
+      <StateNumber>726</StateNumber>
+      <TypeId>23</TypeId>
+    </column>
+    <index id="44" parent="23" name="req_give_pet_pk">
+      <ObjectId>32779</ObjectId>
+      <StateNumber>714</StateNumber>
+      <ColNames>id_req_gp</ColNames>
+      <Unique>1</Unique>
+      <Primary>1</Primary>
+    </index>
+    <key id="45" parent="23" name="req_give_pet_pk">
+      <ObjectId>32780</ObjectId>
+      <StateNumber>669</StateNumber>
+      <ColNames>id_req_gp</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>req_give_pet_pk</UnderlyingIndexName>
+    </key>
+    <column id="46" parent="24" name="reqpet_id">
       <Position>1</Position>
       <DataType>integer|0s</DataType>
       <NotNull>1</NotNull>
@@ -214,57 +296,70 @@ sequence|table|16384|16386|1
       <DefaultExpression>nextval(&apos;req_pet_reqpet_id_seq&apos;::regclass)</DefaultExpression>
       <TypeId>23</TypeId>
     </column>
-    <column id="34" parent="23" name="user_id">
+    <column id="47" parent="24" name="user_id">
       <Position>2</Position>
       <DataType>integer|0s</DataType>
       <StateNumber>559</StateNumber>
       <TypeId>23</TypeId>
     </column>
-    <column id="35" parent="23" name="pet_id">
+    <column id="48" parent="24" name="pet_id">
       <Position>3</Position>
       <DataType>integer|0s</DataType>
       <StateNumber>559</StateNumber>
       <TypeId>23</TypeId>
     </column>
-    <column id="36" parent="23" name="date_conc">
+    <column id="49" parent="24" name="date_conc">
       <Position>4</Position>
       <DataType>date|0s</DataType>
       <StateNumber>559</StateNumber>
       <TypeId>1082</TypeId>
     </column>
-    <column id="37" parent="23" name="is_child">
+    <column id="50" parent="24" name="is_child">
       <Position>5</Position>
       <DataType>boolean|0s</DataType>
       <StateNumber>559</StateNumber>
       <TypeId>16</TypeId>
     </column>
-    <column id="38" parent="23" name="is_pets">
+    <column id="51" parent="24" name="is_pets">
       <Position>6</Position>
       <DataType>boolean|0s</DataType>
       <StateNumber>559</StateNumber>
       <TypeId>16</TypeId>
     </column>
-    <column id="39" parent="23" name="is_house">
+    <column id="52" parent="24" name="is_house">
       <Position>7</Position>
-      <DataType>varchar(25)|0s</DataType>
-      <StateNumber>559</StateNumber>
-      <TypeId>1043</TypeId>
+      <DataType>boolean|0s</DataType>
+      <StateNumber>717</StateNumber>
+      <TypeId>16</TypeId>
     </column>
-    <index id="40" parent="23" name="req_pet_pkey">
+    <column id="53" parent="24" name="active">
+      <Position>8</Position>
+      <DataType>boolean|0s</DataType>
+      <StateNumber>711</StateNumber>
+      <DefaultExpression>true</DefaultExpression>
+      <TypeId>16</TypeId>
+    </column>
+    <column id="54" parent="24" name="status">
+      <Position>9</Position>
+      <DataType>integer|0s</DataType>
+      <StateNumber>729</StateNumber>
+      <TypeId>23</TypeId>
+    </column>
+    <index id="55" parent="24" name="req_pet_pkey">
       <ObjectId>16421</ObjectId>
-      <StateNumber>559</StateNumber>
+      <StateNumber>717</StateNumber>
       <ColNames>reqpet_id</ColNames>
       <Unique>1</Unique>
       <Primary>1</Primary>
     </index>
-    <key id="41" parent="23" name="req_pet_pkey">
+    <key id="56" parent="24" name="req_pet_pkey">
       <ObjectId>16422</ObjectId>
       <StateNumber>559</StateNumber>
       <ColNames>reqpet_id</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>req_pet_pkey</UnderlyingIndexName>
     </key>
-    <foreign-key id="42" parent="23" name="req_pet_user_id_fkey">
+    <foreign-key id="57" parent="24" name="req_pet_user_id_fkey">
       <ObjectId>16423</ObjectId>
       <StateNumber>559</StateNumber>
       <ColNames>user_id</ColNames>
@@ -274,7 +369,7 @@ sequence|table|16384|16386|1
       <RefKeyName>users_pkey</RefKeyName>
       <RefColNames>user_id</RefColNames>
     </foreign-key>
-    <foreign-key id="43" parent="23" name="req_pet_pet_id_fkey">
+    <foreign-key id="58" parent="24" name="req_pet_pet_id_fkey">
       <ObjectId>16428</ObjectId>
       <StateNumber>559</StateNumber>
       <ColNames>pet_id</ColNames>
@@ -284,13 +379,13 @@ sequence|table|16384|16386|1
       <RefKeyName>pets_pkey</RefKeyName>
       <RefColNames>pet_id</RefColNames>
     </foreign-key>
-    <check id="44" parent="23" name="req_pet_is_house_check">
-      <ObjectId>16420</ObjectId>
-      <StateNumber>559</StateNumber>
+    <check id="59" parent="24" name="req_pet_is_house_check">
+      <ObjectId>32815</ObjectId>
+      <StateNumber>717</StateNumber>
       <ColNames>is_house</ColNames>
-      <Predicate>(is_house)::text = ANY ((ARRAY[&apos;private_house&apos;::character varying, &apos;apartment&apos;::character varying, &apos;other&apos;::character varying])::text[])</Predicate>
+      <Predicate>(is_house)::text = ANY (ARRAY[(&apos;private_house&apos;::character varying)::text, (&apos;apartment&apos;::character varying)::text, (&apos;other&apos;::character varying)::text])</Predicate>
     </check>
-    <column id="45" parent="24" name="user_id">
+    <column id="60" parent="25" name="user_id">
       <Position>1</Position>
       <DataType>integer|0s</DataType>
       <NotNull>1</NotNull>
@@ -298,63 +393,82 @@ sequence|table|16384|16386|1
       <DefaultExpression>nextval(&apos;users_user_id_seq&apos;::regclass)</DefaultExpression>
       <TypeId>23</TypeId>
     </column>
-    <column id="46" parent="24" name="hashsum">
+    <column id="61" parent="25" name="hashsum">
       <Position>2</Position>
       <DataType>varchar(100)|0s</DataType>
       <StateNumber>555</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="47" parent="24" name="fio">
-      <Position>3</Position>
-      <DataType>varchar(100)|0s</DataType>
-      <StateNumber>555</StateNumber>
-      <TypeId>1043</TypeId>
-    </column>
-    <column id="48" parent="24" name="telephone">
+    <column id="62" parent="25" name="telephone">
       <Position>4</Position>
       <DataType>varchar(20)|0s</DataType>
       <StateNumber>555</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="49" parent="24" name="email">
+    <column id="63" parent="25" name="email">
       <Position>5</Position>
       <DataType>varchar(50)|0s</DataType>
       <StateNumber>555</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="50" parent="24" name="role">
+    <column id="64" parent="25" name="role">
       <Position>6</Position>
       <DataType>varchar(25)|0s</DataType>
       <StateNumber>555</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="51" parent="24" name="age">
+    <column id="65" parent="25" name="age">
       <Position>7</Position>
       <DataType>integer|0s</DataType>
       <StateNumber>555</StateNumber>
       <TypeId>23</TypeId>
     </column>
-    <column id="52" parent="24" name="reqvol">
+    <column id="66" parent="25" name="reqvol">
       <Position>8</Position>
       <DataType>boolean|0s</DataType>
       <StateNumber>555</StateNumber>
       <TypeId>16</TypeId>
     </column>
-    <index id="53" parent="24" name="users_pkey">
+    <column id="67" parent="25" name="firstname">
+      <Position>9</Position>
+      <DataType>varchar(255)|0s</DataType>
+      <StateNumber>649</StateNumber>
+      <TypeId>1043</TypeId>
+    </column>
+    <column id="68" parent="25" name="lastname">
+      <Position>10</Position>
+      <DataType>varchar(255)|0s</DataType>
+      <StateNumber>652</StateNumber>
+      <TypeId>1043</TypeId>
+    </column>
+    <column id="69" parent="25" name="login">
+      <Position>11</Position>
+      <DataType>varchar(255)|0s</DataType>
+      <StateNumber>655</StateNumber>
+      <TypeId>1043</TypeId>
+    </column>
+    <column id="70" parent="25" name="active">
+      <Position>12</Position>
+      <DataType>boolean|0s</DataType>
+      <StateNumber>708</StateNumber>
+      <DefaultExpression>true</DefaultExpression>
+      <TypeId>16</TypeId>
+    </column>
+    <index id="71" parent="25" name="users_pkey">
       <ObjectId>16391</ObjectId>
-      <StateNumber>555</StateNumber>
+      <StateNumber>708</StateNumber>
       <ColNames>user_id</ColNames>
       <Unique>1</Unique>
       <Primary>1</Primary>
     </index>
-    <key id="54" parent="24" name="users_pkey">
+    <key id="72" parent="25" name="users_pkey">
       <ObjectId>16392</ObjectId>
       <StateNumber>555</StateNumber>
       <ColNames>user_id</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>users_pkey</UnderlyingIndexName>
     </key>
-    <check id="55" parent="24" name="users_role_check">
+    <check id="73" parent="25" name="users_role_check">
       <ObjectId>16390</ObjectId>
       <StateNumber>555</StateNumber>
       <ColNames>role</ColNames>

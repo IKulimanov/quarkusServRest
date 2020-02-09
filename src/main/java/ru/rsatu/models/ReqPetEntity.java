@@ -1,18 +1,71 @@
 package ru.rsatu.models;
 
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
 import javax.persistence.*;
 import java.sql.Date;
 
 @Entity
 @Table(name = "req_pet", schema = "public", catalog = "postgres")
-public class ReqPetEntity {
+@NamedQueries({
+        @NamedQuery(name = "ReqPetEntity.getall",
+                query = "SELECT x FROM PetsEntity x "),
+        @NamedQuery(name = "ReqPetEntity.findreq",
+                query = "SELECT z.petId,z.status FROM ReqPetEntity z WHERE z.userId = :id_user AND z.active =: active")
+})
+public class ReqPetEntity extends PanacheEntity {
+
+    @GeneratedValue
     private int reqpetId;
+
     private Date dateConc;
     private Boolean isChild;
     private Boolean isPets;
-    private String isHouse;
-    private Integer userId;
-    private Integer petId;
+    private Boolean isHouse;
+    private Boolean active;
+    private int userId;
+    private int petId;
+    private Integer status;
+
+    @Basic
+    @Column(name = "user_id")
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
+    }
+
+    @Basic
+    @Column(name = "pet_id")
+    public Integer getPetId() {
+        return petId;
+    }
+
+    public void setPetId(Integer petId) {
+        this.petId = petId;
+    }
+
+    @Basic
+    @Column(name = "status")
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    @Basic
+    @Column(name = "active")
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
 
     @Id
     @Column(name = "reqpet_id")
@@ -56,14 +109,14 @@ public class ReqPetEntity {
 
     @Basic
     @Column(name = "is_house")
-    public String getIsHouse() {
+    public Boolean getIsHouse() {
         return isHouse;
     }
 
-    public void setIsHouse(String isHouse) {
+    public void setIsHouse(Boolean isHouse) {
         this.isHouse = isHouse;
     }
-                                                                                                                                                                                                                                                                                                            
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -88,25 +141,5 @@ public class ReqPetEntity {
         result = 31 * result + (isPets != null ? isPets.hashCode() : 0);
         result = 31 * result + (isHouse != null ? isHouse.hashCode() : 0);
         return result;
-    }
-
-    @Basic
-    @Column(name = "user_id")
-    public Integer getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
-    @Basic
-    @Column(name = "pet_id")
-    public Integer getPetId() {
-        return petId;
-    }
-
-    public void setPetId(Integer petId) {
-        this.petId = petId;
     }
 }

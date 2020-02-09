@@ -1,5 +1,7 @@
 package ru.rsatu.dologin;
 
+import scala.Int;
+
 /**
  * Класс для ответа в метода логина
  *
@@ -7,26 +9,26 @@ package ru.rsatu.dologin;
  */
 public class LoginResponse {
 
-    private String token;
-    private String userName;
+    private String login;
+    private String role;
 
     public LoginResponse() {
     }
 
-    public String getToken() {
-        return token;
+    public String getlogin() {
+        return login;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setlogin(String login) {
+        this.login = login;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getrole() {
+        return role;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setrole(String role) {
+        this.role = role;
     }
 
 }

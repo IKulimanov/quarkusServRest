@@ -1,18 +1,61 @@
 package ru.rsatu.models;
 
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
 import javax.persistence.*;
 
 @Entity
 @Table(name = "users", schema = "public", catalog = "postgres")
-public class UsersEntity {
+@NamedQueries({
+        @NamedQuery(name = "UsersEntity.findlogin",
+                query = "SELECT f FROM UsersEntity f WHERE f.login = :login"),
+        @NamedQuery(name = "UsersEntity.findemail",
+                query = "SELECT h FROM UsersEntity h WHERE h.email = :email"),
+        @NamedQuery(name = "UsersEntity.deleteUser",
+                query = "DELETE FROM UsersEntity g WHERE g.login = :login"),
+        @NamedQuery(name = "UsersEntity.updateReqVol",
+                query = "UPDATE UsersEntity s SET s.reqvol = :reqvol WHERE s.login = :login"),
+        @NamedQuery(name = "UsersEntity.findHash",
+                query = "SELECT r FROM UsersEntity r WHERE r.hashsum = :hashsum")
+})
+
+public class UsersEntity extends PanacheEntity {
+    @GeneratedValue
     private int userId;
+
     private String hashsum;
-    private String fio;
     private String telephone;
     private String email;
     private String role;
     private Integer age;
     private Boolean reqvol;
+    private String firstname;
+    private String lastname;
+    private String login;
+    private Boolean active;
+
+
+    @Basic
+    @Column(name = "active")
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+
+
+
+    public UsersEntity getUser(String login){
+        return find("login", login).firstResult();
+    }
+
+    public UsersEntity getUserMail(String mail){
+        return find("email", mail).firstResult();
+    }
+
 
     @Id
     @Column(name = "user_id")
@@ -32,16 +75,6 @@ public class UsersEntity {
 
     public void setHashsum(String hashsum) {
         this.hashsum = hashsum;
-    }
-
-    @Basic
-    @Column(name = "fio")
-    public String getFio() {
-        return fio;
-    }
-
-    public void setFio(String fio) {
-        this.fio = fio;
     }
 
     @Basic
@@ -94,6 +127,36 @@ public class UsersEntity {
         this.reqvol = reqvol;
     }
 
+    @Basic
+    @Column(name = "firstname")
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    @Basic
+    @Column(name = "lastname")
+    public String getLastname() {
+        return lastname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
+    }
+
+    @Basic
+    @Column(name = "login")
+    public String getLogin() {
+        return login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -103,12 +166,14 @@ public class UsersEntity {
 
         if (userId != that.userId) return false;
         if (hashsum != null ? !hashsum.equals(that.hashsum) : that.hashsum != null) return false;
-        if (fio != null ? !fio.equals(that.fio) : that.fio != null) return false;
         if (telephone != null ? !telephone.equals(that.telephone) : that.telephone != null) return false;
         if (email != null ? !email.equals(that.email) : that.email != null) return false;
         if (role != null ? !role.equals(that.role) : that.role != null) return false;
         if (age != null ? !age.equals(that.age) : that.age != null) return false;
         if (reqvol != null ? !reqvol.equals(that.reqvol) : that.reqvol != null) return false;
+        if (firstname != null ? !firstname.equals(that.firstname) : that.firstname != null) return false;
+        if (lastname != null ? !lastname.equals(that.lastname) : that.lastname != null) return false;
+        if (login != null ? !login.equals(that.login) : that.login != null) return false;
 
         return true;
     }
@@ -117,12 +182,14 @@ public class UsersEntity {
     public int hashCode() {
         int result = userId;
         result = 31 * result + (hashsum != null ? hashsum.hashCode() : 0);
-        result = 31 * result + (fio != null ? fio.hashCode() : 0);
         result = 31 * result + (telephone != null ? telephone.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
         result = 31 * result + (role != null ? role.hashCode() : 0);
         result = 31 * result + (age != null ? age.hashCode() : 0);
         result = 31 * result + (reqvol != null ? reqvol.hashCode() : 0);
+        result = 31 * result + (firstname != null ? firstname.hashCode() : 0);
+        result = 31 * result + (lastname != null ? lastname.hashCode() : 0);
+        result = 31 * result + (login != null ? login.hashCode() : 0);
         return result;
     }
 }

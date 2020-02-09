@@ -4,9 +4,13 @@
     "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
   <session-factory>
-    <property name="connection.url"/>
-    <property name="connection.driver_class"/>
-    <!-- <property name="connection.username"/> -->
+    <property name="connection.url">jdbc:postgresql://localhost:5432/postgres</property>
+    <property name="connection.driver_class">org.postgresql.Driver</property>
+      <mapping class="ru.rsatu.models.PetsEntity"/>
+      <mapping class="ru.rsatu.models.ReqGivePetEntity"/>
+      <mapping class="ru.rsatu.models.ReqPetEntity"/>
+      <mapping class="ru.rsatu.models.UsersEntity"/>
+      <!-- <property name="connection.username"/> -->
     <!-- <property name="connection.password"/> -->
 
     <!-- DB schema will be updated if needed -->

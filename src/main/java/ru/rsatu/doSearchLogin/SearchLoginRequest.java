@@ -1,16 +1,9 @@
-package ru.rsatu.dologin;
+package ru.rsatu.doSearchLogin;
 
-/**
- * Запрос для логина
- *
- * @author npetrov
- */
-public class LoginRequest {
-
+public class SearchLoginRequest {
     private String login;
     private String password;
-    public LoginRequest() {
-    }
+    private String email;
 
     public String getLogin() {
         return login;
@@ -18,6 +11,16 @@ public class LoginRequest {
 
     public void setLogin(String login) {
         this.login = login;
+    }
+
+
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {
