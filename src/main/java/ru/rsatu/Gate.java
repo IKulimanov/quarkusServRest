@@ -1,12 +1,18 @@
 package ru.rsatu;
 
-
-
+import com.amazonaws.*;
 import javax.inject.Inject;
-
 import java.util.ArrayList;
 import java.util.List;
-
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.UUID;
 import javax.persistence.Query;
 import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
@@ -19,9 +25,21 @@ import javax.ws.rs.core.Response;
 import java.sql.Driver.*;
 
 import axle.logic.SamplePredicates;
+import com.amazonaws.auth.*;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.Bucket;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
-import org.graalvm.compiler.lir.LIRInstruction;
+//import org.graalvm.compiler.lir.LIRInstruction;
 import ru.rsatu.doAnimal.AnimalRequest;
+import ru.rsatu.doAnimal.AnimalResponce;
 import ru.rsatu.doSearchLogin.SearchLoginRequest;
 import ru.rsatu.dologin.LoginRequest;
 import ru.rsatu.dologin.LoginResponse;
@@ -29,6 +47,7 @@ import ru.rsatu.dologin.LoginResponse;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
@@ -64,6 +83,8 @@ public class Gate {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String hello() {
+
+
         return "hello";
     }
 
@@ -179,12 +200,89 @@ public class Gate {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/getAnimal")
-    public Response getAnimal(AnimalRequest animReq) {
-    ArrayList<PetsEntity> pets;
+    public Response getAnimal(AnimalRequest animReq) throws IOException {
+        /**
+         * AMAZON
+         */
+
+        AWSCredentials credentials = null;
+        String s3_accessKey = "F9vj-60KVf2jnCycxiyL";
+        String s3_secretKey = "EtVde7J0tqLm572I8mCvH0HWssdG10uwm-MJetD4";
+        BasicAWSCredentials creds = new BasicAWSCredentials(s3_accessKey, s3_secretKey);
+        S3Object object = null;
+
+      /*  try{
+            credentials = new ProfileCredentialsProvider().getCredentials();
+
+        }catch (Exception e){
+            throw new AmazonClientException(
+                    "asdasdas", e
+            );
+        }*/
+
+        AmazonS3 s3 = AmazonS3ClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(creds))
+                .withEndpointConfiguration(
+                        new AmazonS3ClientBuilder.EndpointConfiguration(
+                                "storage.yandexcloud.net","ru-central1-c"
+                        )
+                )
+                .build();
+
+        String bucketName = "animals-photo";// + UUID.randomUUID();
+        String key = "1.jpg";
+
+        System.out.println("Start Amazon S3");
+
+        try{
+
+            System.out.println("Listing buckets");
+            for (Bucket bucket : s3.listBuckets()) {
+                System.out.println(" - " + bucket.getName());
+            }
+            System.out.println();
+
+
+            System.out.println("Downaloading an object");
+            object = s3.getObject(new GetObjectRequest(bucketName,key));
+            System.out.println("Content-Type: "); //+ object.getObjectMetadata().getContentType());
+            System.out.println(object.getObjectContent());
+            //displayTextInputStream(object.getObjectContent());
+            /*
+            ObjectListing objectListing = s3.listObjects(new ListObjectsRequest()
+            .withBucketName(bucketName)
+            .withPrefix("My"));
+            for (S3ObjectSummary objectSummary : objectListing.getObjectSummaries()) {
+                System.out.println(" - " + objectSummary.getKey() + "  " +
+                        "(size = " + objectSummary.getSize() + ")");
+            }
+            System.out.println("=---------=");
+*/
+        } catch (AmazonServiceException ase){
+            System.out.println("Caught an AmazonServiceException, which means your request made it "
+                    + "to Amazon S3, but was rejected with an error response for some reason.");
+            System.out.println("Error Message:    " + ase.getMessage());
+            System.out.println("HTTP Status Code: " + ase.getStatusCode());
+            System.out.println("AWS Error Code:   " + ase.getErrorCode());
+            System.out.println("Error Type:       " + ase.getErrorType());
+            System.out.println("Request ID:       " + ase.getRequestId());
+        } catch (AmazonClientException ace){
+            System.out.println("=----2-----=");
+        }
+
+
+        /**
+         *
+         */
+        ArrayList<PetsEntity> pets;
+
+        System.out.println("tyt");
 
         pets = getPets(animReq.getType(),animReq.getGender(),animReq.getAge(),animReq.getActive());
+        System.out.println("tyts");
         if (pets.size() < 8)
         {
+            System.out.println("tyt0");
             return Response.ok(pets).build();
         }
 
@@ -193,14 +291,44 @@ public class Gate {
         Integer off = pets.size() - page_t - 1;
 
         ArrayList<PetsEntity> listpets = new ArrayList<PetsEntity>();
-        Integer j = 0;
+        ArrayList<AnimalResponce> listResp = new ArrayList<>();
+       // Integer j = 0;
+        System.out.println("tyt1");
+        //AnimalResponce anResp = new AnimalResponce();
         for (Integer i = page_t; i <= page_t+off-1; i++)
         {
+            //anResp.setName(pets.get(i).getName());
+            //anResp.setAge(pets.get(i).getAge());
+            //anResp.setType(pets.get(i).getType());
+            //anResp.setGender(pets.get(i).getGender());
+            //anResp.setPhoto(object.getObjectContent());
+            //listResp.add(i, anResp);
+            //listpets.get(i).setPhoto(object.getObjectContent());
             listpets.add(pets.get(i));
-            j++;
+           // j++;
+           // System.out.println(anResp.getName());
         }
         return Response.ok(listpets).build();
 
+    }
+
+    /**
+     * Displays the contents of the specified input stream as text.
+     *
+     * @param input
+     *            The input stream to display as text.
+     *
+     * @throws IOException
+     */
+    private static void displayTextInputStream(InputStream input) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+        while (true) {
+            String line = reader.readLine();
+            if (line == null) break;
+
+            System.out.println("    " + line);
+        }
+        System.out.println();
     }
 
     /**
@@ -452,6 +580,7 @@ public class Gate {
 
     public Integer searchUser(String login)
     {
+
         ArrayList<UsersEntity> en;
         //UsersEntity[] entitis
                 en = (ArrayList<UsersEntity>) entityManager.createNamedQuery("UsersEntity.findlogin", UsersEntity.class)
@@ -473,6 +602,7 @@ public class Gate {
      * @return
      */
     public ArrayList<PetsEntity> getPets(String type, String gender, Integer age, Boolean active){
+        System.out.println("tesgdg");
         Integer ageL = 0;
         Integer ageH = 100;
         switch (age){
@@ -497,6 +627,8 @@ public class Gate {
                 ageH = 100;
                 break;
         }
+        System.out.println("aaa");
+
         ArrayList<PetsEntity> en;
                 en =(ArrayList<PetsEntity>) entityManager.createNamedQuery("PetsEntity.getPet", PetsEntity.class)
                 .setParameter("active", active).setParameter("type", type).setParameter("ageh", ageH)
