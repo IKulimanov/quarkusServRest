@@ -10,14 +10,18 @@ import javax.persistence.*;
         @NamedQuery(name = "ReqGivePetEntity.getall",
                 query = "SELECT x FROM ReqGivePetEntity x "),
         @NamedQuery(name = "ReqGivePetEntity.findreq",
-                query = "SELECT z.namepet,z.typePet,z.status FROM ReqGivePetEntity z WHERE z.idUser = :id_user AND z.active =: active")
+                query = "SELECT z.namepet,z.typePet,z.status FROM ReqGivePetEntity z WHERE z.idUser = :id_user AND z.active =: active"),
+        @NamedQuery(name = "ReqGivePetEntity.findreqUserId",
+                query = "SELECT v FROM ReqGivePetEntity v WHERE v.idUser = :userId AND v.status = :status"),
+        @NamedQuery(name = "ReqGivePetEntity.findreqStatus",
+                query = "SELECT v FROM ReqGivePetEntity v WHERE v.status = :status"),
 })
 
 public class ReqGivePetEntity extends PanacheEntity {
     @GeneratedValue
     private int idReqGp;
 
-    private Integer status;
+    private String status;
     private String namepet;
     private Integer agepet;
     private String genderPet;
@@ -37,11 +41,11 @@ public class ReqGivePetEntity extends PanacheEntity {
 
     @Basic
     @Column(name = "status")
-    public Integer getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

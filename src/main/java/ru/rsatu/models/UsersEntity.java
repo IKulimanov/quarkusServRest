@@ -8,7 +8,7 @@ import javax.persistence.*;
 @Table(name = "users", schema = "public", catalog = "postgres")
 @NamedQueries({
         @NamedQuery(name = "UsersEntity.findlogin",
-                query = "SELECT f FROM UsersEntity f WHERE f.login = :login"),
+                query = "SELECT f FROM UsersEntity f WHERE f.login = ?1"),
         @NamedQuery(name = "UsersEntity.findemail",
                 query = "SELECT h FROM UsersEntity h WHERE h.email = :email"),
         @NamedQuery(name = "UsersEntity.deleteUser",
@@ -16,15 +16,20 @@ import javax.persistence.*;
         @NamedQuery(name = "UsersEntity.updateReqVol",
                 query = "UPDATE UsersEntity s SET s.reqvol = :reqvol WHERE s.login = :login"),
         @NamedQuery(name = "UsersEntity.findHash",
-                query = "SELECT r FROM UsersEntity r WHERE r.hashsum = :hashsum")
+                query = "SELECT r FROM UsersEntity r WHERE r.hashsum = :hashsum"),
+        @NamedQuery(name = "UsersEntity.findloginStat",
+                query = "SELECT f FROM UsersEntity f WHERE f.login = :login AND f.active = :active"),
+        @NamedQuery(name = "UsersEntity.findUsersStat",
+                query = "SELECT f FROM UsersEntity f WHERE f.active = :active")
+
 })
 
 public class UsersEntity extends PanacheEntity {
-    @GeneratedValue
+
     private int userId;
 
-    private String hashsum;
-    private String telephone;
+    private Integer hashsum;
+    private Integer telephone;
     private String email;
     private String role;
     private Integer age;
@@ -69,21 +74,21 @@ public class UsersEntity extends PanacheEntity {
 
     @Basic
     @Column(name = "hashsum")
-    public String getHashsum() {
+    public Integer getHashsum() {
         return hashsum;
     }
 
-    public void setHashsum(String hashsum) {
+    public void setHashsum(Integer hashsum) {
         this.hashsum = hashsum;
     }
 
     @Basic
     @Column(name = "telephone")
-    public String getTelephone() {
+    public Integer getTelephone() {
         return telephone;
     }
 
-    public void setTelephone(String telephone) {
+    public void setTelephone(Integer telephone) {
         this.telephone = telephone;
     }
 

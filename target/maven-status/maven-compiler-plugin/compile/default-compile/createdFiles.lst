@@ -1,9 +1,11 @@
+ru/rsatu/doSearchResponce.class
 ru/rsatu/doSearchLogin/SearchLoginRequest.class
 ru/rsatu/dologin/LoginRequest.class
 ru/rsatu/models/ReqGivePetEntity.class
 ru/rsatu/doSearchLogin/SearchLoginResponse.class
 ru/rsatu/Gate.class
 ru/rsatu/models/PetsEntity.class
+ru/rsatu/doSearchStatUser.class
 ru/rsatu/models/ReqPetEntity.class
 ru/rsatu/models/UsersEntity.class
 ru/rsatu/doAnimal/AnimalRequest.class

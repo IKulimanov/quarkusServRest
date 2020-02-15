@@ -2,18 +2,9 @@ package ru.rsatu;
 
 import com.amazonaws.*;
 import javax.inject.Inject;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.UUID;
-import javax.persistence.Query;
 import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -22,22 +13,21 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.sql.Driver.*;
 
-import axle.logic.SamplePredicates;
 import com.amazonaws.auth.*;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.cloudfront.model.FieldLevelEncryption;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.MultipartUpload;
 import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.Bucket;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 //import org.graalvm.compiler.lir.LIRInstruction;
+//import io.vertx.reactivex.redis.client.Request;
+//import org.graalvm.compiler.core.GraalCompiler;
+import ru.rsatu.doAccauntReg.AccauntRegRequest;
+import ru.rsatu.doAllPets.doPetsStateRequest;
 import ru.rsatu.doAnimal.AnimalRequest;
 import ru.rsatu.doAnimal.AnimalResponce;
 import ru.rsatu.doSearchLogin.SearchLoginRequest;
@@ -45,31 +35,8 @@ import ru.rsatu.dologin.LoginRequest;
 import ru.rsatu.dologin.LoginResponse;
 
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.UUID;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
-import javax.json.Json;
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
 
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
-
-import io.quarkus.runtime.StartupEvent;
 import ru.rsatu.models.PetsEntity;
 import ru.rsatu.models.ReqGivePetEntity;
 import ru.rsatu.models.ReqPetEntity;
@@ -79,12 +46,19 @@ import ru.rsatu.models.UsersEntity;
 public class Gate {
     @Inject
     EntityManager entityManager;
-
+    Integer pages;
+    int r = 9;
     @GET
+    //@Transactional
     @Produces(MediaType.TEXT_PLAIN)
     public String hello() {
-
-
+       /* UsersEntity us = new UsersEntity();
+        us.setLogin("admin");
+        us.setRole("admin");
+        us.setUserId(999);
+        String z = "admin" + "admin";
+        us.setHashsum(z.hashCode());
+        us.persist();*/
         return "hello";
     }
 
@@ -105,30 +79,23 @@ public class Gate {
         String password = request.getPassword();
         UE = UE.getUser(login);
         if (UE == null) {
-            return Response.ok("login or password bad").build();
+            return Response.ok("login bad").build();
         } else {
             if (UE.getActive() == false) {
                 return Response.ok("user lock").build();
             }
+        }
+        String hash = request.getLogin() + request.getPassword();
+        int hashUser =  UE.getHashsum();
+        if (hashUser != hash.hashCode()){
+            return Response.ok("password bad").build();
+        }
+        else
+        {
             result.setlogin(UE.getLogin());
             result.setrole(UE.getRole());
             return Response.ok(result).build();
         }
-        // логика проверки логина, формирование токена
-        /*String token = login + password;
-        // String userName = "Test Test";
-        int hash = token.hashCode();
-        // формирование ответа
-        result.setToken(hash);
-        //result.setUserName(userName);
-
-        UsersEntity[] entitis = entityManager.createNamedQuery("UsersEntity.findHash", UsersEntity.class)
-                .setParameter("hashsum", hash)
-                .getResultList().toArray(new UsersEntity[0]);
-        if (entitis != null) {
-            return Response.ok(result).build();
-        }
-        return Response.ok("login or password bad").build();*/
     }
 
     /**
@@ -144,14 +111,19 @@ public class Gate {
     @Transactional
     public Response doSerchLog(SearchLoginRequest serchrequest) {
         UsersEntity UE = new UsersEntity();
+        UsersEntity UEe = new UsersEntity();
+
         UE = UE.getUser(serchrequest.getLogin());
+
         if (UE != null) {
             return Response.ok("login invalid").build();
         }
-        UE = UE.getUserMail(serchrequest.getEmail());
-        if (UE != null) {
+
+        UEe = UEe.getUserMail(serchrequest.getEmail());
+        if (UEe != null) {
             return Response.ok("email invalid").build();
         }
+
         return Response.ok("OK").build();
     }
 
@@ -159,7 +131,7 @@ public class Gate {
     /**
      * Регистрация пользователя
      *
-     * @param usr
+     * @param ARreq
      * @return
      */
     @POST
@@ -167,11 +139,25 @@ public class Gate {
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/doAccauntReg")
     @Transactional
-    public Response doAccauntReg(UsersEntity usr) {
-        usr.persist();
+    public Response doAccauntReg(AccauntRegRequest ARreq) {
+        UsersEntity user = new UsersEntity();
+
+        user.setActive(true);
+        user.setAge(ARreq.getAge());
+        user.setEmail(ARreq.getEmail());
+        user.setFirstname(ARreq.getFirstname());
+        user.setLastname(ARreq.getLastname());
+        user.setLogin(ARreq.getLogin());
+        user.setRole("user");
+        user.setTelephone(ARreq.getTelephone());
+        String hash = ARreq.getLogin() + ARreq.getPassword();
+        user.setHashsum(hash.hashCode());
+        user.setUserId(r);
+        user.persist();
+        r++;
         LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setLogin(usr.getLogin());
-        loginRequest.setPassword(usr.getHashsum());
+        loginRequest.setLogin(ARreq.getLogin());
+        loginRequest.setPassword(ARreq.getPassword());
         return doLogin(loginRequest);
     }
 
@@ -187,9 +173,23 @@ public class Gate {
     @Path("/addPets")
     @Transactional
     public Response addPets(PetsEntity item) {
+
         item.persist();
         return Response.ok(item).status(201).build();
     }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/uploadImage")
+    public Response uploadImage(String s) throws IOException {
+        System.out.println("obj");
+        //System.out.println(file.getPath());
+        //System.out.println(file);
+        return Response.ok("OK").build();
+
+    }
+
 
     /**
      * Запрос на получение списка из 8 животных с учётом фильтров
@@ -230,7 +230,7 @@ public class Gate {
                 .build();
 
         String bucketName = "animals-photo";// + UUID.randomUUID();
-        String key = "1.jpg";
+        String key = "2.jpg";
 
         System.out.println("Start Amazon S3");
 
@@ -271,46 +271,49 @@ public class Gate {
         }
 
 
+
         /**
          *
          */
         ArrayList<PetsEntity> pets;
-
-        System.out.println("tyt");
+        Integer page_t;
+        Integer off;
 
         pets = getPets(animReq.getType(),animReq.getGender(),animReq.getAge(),animReq.getActive());
-        System.out.println("tyts");
-        if (pets.size() < 8)
+
+        pages = pets.size()/8;
+        pages = pages + (pets.size() - pages*8);
+
+        page_t = animReq.getPage()*8-8;
+
+        off = page_t + 8;
+        if (off > pets.size())
         {
-            System.out.println("tyt0");
-            return Response.ok(pets).build();
+            off = pets.size() - (off-8);
         }
-
-        Integer countP = pets.size()/8;
-        Integer page_t = animReq.getPage()*8-8;
-        Integer off = pets.size() - page_t - 1;
-
+        off = off + page_t;
         ArrayList<PetsEntity> listpets = new ArrayList<PetsEntity>();
         ArrayList<AnimalResponce> listResp = new ArrayList<>();
-       // Integer j = 0;
-        System.out.println("tyt1");
-        //AnimalResponce anResp = new AnimalResponce();
-        for (Integer i = page_t; i <= page_t+off-1; i++)
+
+        for (Integer i = page_t; i <= off-1; i++)
         {
-            //anResp.setName(pets.get(i).getName());
-            //anResp.setAge(pets.get(i).getAge());
-            //anResp.setType(pets.get(i).getType());
-            //anResp.setGender(pets.get(i).getGender());
-            //anResp.setPhoto(object.getObjectContent());
-            //listResp.add(i, anResp);
-            //listpets.get(i).setPhoto(object.getObjectContent());
             listpets.add(pets.get(i));
-           // j++;
-           // System.out.println(anResp.getName());
         }
         return Response.ok(listpets).build();
 
     }
+
+
+
+    @GET
+    @Transactional
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/getPage")
+    public Response getPage() {
+        return Response.ok(pages).build();
+    }
+
 
     /**
      * Displays the contents of the specified input stream as text.
@@ -377,20 +380,22 @@ public class Gate {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/doReqAnimalGive")
-    public Response doRequestAnimalGive(String login, String name, Integer age, String type, String gender) {
+    public Response doRequestAnimalGive(AnumalGiveRequest source) {
 
-        Integer userID = searchUser(login);
-        if (userID == -1) {
+        Integer userID = searchUser(source.getLogin());
+        if (userID == 0) {
             return Response.ok("login not find").build();
         }
 
         ReqGivePetEntity entityReqGive = new ReqGivePetEntity();
         entityReqGive.setActive(true);
-        entityReqGive.setAgepet(age);
-        entityReqGive.setGenderPet(gender);
+        entityReqGive.setAgepet(source.getAge());
+        entityReqGive.setGenderPet(source.getGender());
         entityReqGive.setIdUser(userID);
-        entityReqGive.setNamepet(name);
-        entityReqGive.setTypePet(type);
+        entityReqGive.setNamepet(source.getName());
+        entityReqGive.setTypePet(source.getType());
+        entityReqGive.setIdReqGp(4);
+        entityReqGive.setStatus("active");
         entityReqGive.persist();
         return Response.ok(entityReqGive).build();
     }
@@ -429,13 +434,16 @@ public class Gate {
         ArrayList<ReqPetEntity> reqpetlist;
         ArrayList<PetsEntity> petslist;
         Integer userID = searchUser(login);
-        if (userID == -1) {
+        if (userID == 0) {
             return Response.ok("login not find").build();
         }
         reqpetlist= (ArrayList<ReqPetEntity>) entityManager.createNamedQuery("ReqPetEntity.findreq", ReqPetEntity.class)
                 .setParameter("id_user", userID).setParameter("active", true)
                 .getResultList();
-
+        if (reqpetlist == null)
+        {
+            return Response.ok("err").build();
+        }
         petslist = (ArrayList<PetsEntity>) entityManager.createNamedQuery("PetsEntity.getPetfromID", PetsEntity.class)
                 .setParameter("petId", reqpetlist.get(0).getPetId()).getResultList();
 
@@ -448,68 +456,146 @@ public class Gate {
      * @return
      */
 
+    /**
+     * Запрос на получение всех пользователей учитывая статус
+     * @param UserSearch
+     * @return
+     */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/doAllUsers")
-    public Response doAllUsers(Integer state) {
-        List<PanacheEntityBase> usersList;
-        switch (state){
-            case 0:
-                usersList = UsersEntity.listAll();
-                break;
-            case 1:
-                usersList = UsersEntity.list("active", true);
-                break;
-            case 2:
-                usersList = UsersEntity.list("active", false);
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + state);
+    public Response doAllUsers(doSearchStatUser UserSearch) {
+        boolean active = true;
+        ArrayList<UsersEntity> Users;
+        List<UsersEntity> User;
+        if (UserSearch.getSelected().equals("active")) {
+            active = true;
+        }
+        else if (UserSearch.getSelected().equals("archive")) {
+            active = false;
+        }
+        if (UserSearch.getSearch().equals("any")) {
+            /**
+             * получение всех польхователей с определенным статусом
+             */
+            Users = (ArrayList<UsersEntity>) entityManager.createNamedQuery("UsersEntity.findUsersStat", UsersEntity.class)
+                    .setParameter("active", active)
+                    .getResultList();
+            }
+        else{
+            /**
+            * получение пользователя с определенным статусом
+            */
+            doSearchResponce result = null;
+            User = entityManager.createNamedQuery("UsersEntity.findloginStat", UsersEntity.class)
+                    .setParameter("login", UserSearch.getSearch()).setParameter("active", active)
+                    .getResultList();
+            result.setEmail(User.get(0).getEmail());
+            result.setFirstname(User.get(0).getFirstname());
+            result.setLastname(User.get(0).getLastname());
+            result.setLogin(User.get(0).getLogin());
+            result.setTelphone(User.get(0).getTelephone());
+            //result.setPages(1);
+            return Response.ok(result).build();
         }
 
+        Integer page_t;
+        Integer off;
+        Integer countP = Users.size()/5;
+        countP = countP + (Users.size() - countP);
+       // int j = 0;
+        page_t = UserSearch.getPage()*5-5;
+        off = page_t + 5;
+        if (off > Users.size())
+        {
+            off = Users.size() - (off-5);
+        }
+        off = off + page_t;
 
-        return Response.ok(usersList).build();
+        ArrayList<doSearchResponce> resultArr = new ArrayList<>();
+
+
+        for (Integer i = page_t; i <= off-1; i++)
+        {
+            doSearchResponce temp = new doSearchResponce();
+            temp.setLogin(Users.get(i).getLogin());
+            temp.setLastname(Users.get(i).getLastname());
+            temp.setFirstname(Users.get(i).getFirstname());
+            temp.setTelphone(Users.get(i).getTelephone());
+            temp.setEmail(Users.get(i).getEmail());
+
+            resultArr.add(temp);
+        }
+
+        return Response.ok(resultArr).build();
+
     }
 
     /**
      * Запрос на поиск пользователя по логину
-     * @param login
+     * @param us
      * @return
      */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/doFindUser")
-    public Response doFindUser(String login) {
-        return Response.ok(UsersEntity.find("login", login)).build();
+    public Response doFindUser(UsersEntity us) {
+        System.out.println(us.getLogin());
+        FindUserResponce resp = new FindUserResponce();
+       List<UsersEntity> en;
+        en = (ArrayList<UsersEntity>) entityManager.createNamedQuery("UsersEntity.findlogin", UsersEntity.class)
+                .setParameter("login", us.getLogin())
+                .getResultList();
+        resp.setAge(en.get(0).getAge());
+        resp.setEmail(en.get(0).getEmail());
+        resp.setFirstname(en.get(0).getFirstname());
+        resp.setLastname(en.get(0).getLastname());
+        resp.setTelephone(en.get(0).getTelephone());
+        return Response.ok(resp).build();
     }
 
     /**
      * Запрос на получение списка животных в записимости от состояния
-     * @param state
+     * @param petsStateReq
      * @return
      */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/doAllPets")
-    public Response doAllPets(Integer state) {
-        List<PanacheEntityBase> petsList;
-        switch (state){
-            case 0:
-                petsList = PetsEntity.listAll();
-                break;
-            case 1:
-                petsList = PetsEntity.list("active", true);
-                break;
-            case 2:
-                petsList = PetsEntity.list("active", false);
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + state);
+    @Transactional
+    public Response doAllPets(doPetsStateRequest petsStateReq) {
+        ArrayList<PetsEntity> pets;
+        Integer page_t;
+        Integer off;
+        boolean isActive;
+        if (petsStateReq.getSelected().equals("active")){
+            isActive = true;
+        } else isActive = false;
+        pets =(ArrayList<PetsEntity>) entityManager.createNamedQuery("PetsEntity.getPetstate", PetsEntity.class)
+                .setParameter("active", isActive).getResultList();
+
+        pages = pets.size()/5;
+        pages = pages + (pets.size() - pages*5);
+
+        page_t = 1*5-5;
+
+        off = page_t + 5;
+        if (off > pets.size())
+        {
+            off = pets.size() - (off-5);
         }
-        return Response.ok(petsList).build();
+        off = off + page_t;
+        ArrayList<PetsEntity> listpets = new ArrayList<PetsEntity>();
+        ArrayList<AnimalResponce> listResp = new ArrayList<>();
+
+        for (Integer i = page_t; i <= off-1; i++)
+        {
+            listpets.add(pets.get(i));
+        }
+        return Response.ok(listpets).build();
     }
 
     /**
@@ -522,22 +608,69 @@ public class Gate {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/doGiveReq")
-    public Response doGiveReq(Integer state) {
-        List<PanacheEntityBase> reqGiveList;
-        switch (state){
-            case 0:
-                reqGiveList = ReqGivePetEntity.listAll();
-                break;
-            case 1:
-                reqGiveList = ReqGivePetEntity.list("active", true);
-                break;
-            case 2:
-                reqGiveList = ReqGivePetEntity.list("active", false);
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + state);
+    public Response doGiveReq(doTakeTablRequest tablReq) {
+        System.out.println(tablReq.getSearch());
+        ArrayList<doGiveTablResponce> doTakeTablResponces = new ArrayList<>();
+        if (tablReq.getSearch().equals("any") == false ) {
+            System.out.println("1");
+            int IDuser = searchUser(tablReq.getSearch());
+            System.out.println(IDuser);
+            ArrayList<ReqGivePetEntity> ReqPetList;
+
+            ReqPetList = (ArrayList<ReqGivePetEntity>) entityManager.createNamedQuery("ReqGivePetEntity.findreqUserId", ReqGivePetEntity.class)
+                    .setParameter("userId", IDuser).setParameter("status", tablReq.getSelected())
+                    .getResultList();
+
+            for (int i = 0; i <= ReqPetList.size(); i++) {
+
+                doGiveTablResponce temp = new doGiveTablResponce();
+                UsersEntity user = new UsersEntity();
+                PetsEntity pet = new PetsEntity();
+                user = UsersEntity.findById(ReqPetList.get(i).getIdUser());
+                temp.setLogin(user.getLogin());
+                temp.setEmail(user.getEmail());
+                temp.setNameuser(user.getFirstname());
+                temp.setPhone(user.getTelephone());
+
+                temp.setTypepet(ReqPetList.get(i).getTypePet());
+                temp.setNamepet(ReqPetList.get(i).getNamepet());
+                temp.setAgepet(ReqPetList.get(i).getAgepet());
+                temp.setGenderpet(ReqPetList.get(i).getGenderPet());
+                doTakeTablResponces.add(temp);
+            }
+
         }
-        return Response.ok(reqGiveList).build();
+        else{
+            if (tablReq.getSearch().equals("any") == true){
+                System.out.println("2");
+                ArrayList<ReqGivePetEntity> ReqPetList;
+                ReqPetList = (ArrayList<ReqGivePetEntity>) entityManager.createNamedQuery("ReqGivePetEntity.findreqStatus", ReqGivePetEntity.class)
+                        .setParameter("status", tablReq.getSelected())
+                        .getResultList();
+
+                for (int i = 0; i < ReqPetList.size(); i++) {
+                    doGiveTablResponce temp = new doGiveTablResponce();
+                    UsersEntity user = new UsersEntity();
+                    PetsEntity pet = new PetsEntity();
+
+                    user = UsersEntity.findById(ReqPetList.get(i).getIdUser());
+                    temp.setLogin(user.getLogin());
+                    temp.setEmail(user.getEmail());
+                    temp.setNameuser(user.getFirstname());
+                    temp.setPhone(user.getTelephone());
+
+                    temp.setTypepet(ReqPetList.get(i).getTypePet());
+                    temp.setNamepet(ReqPetList.get(i).getNamepet());
+                    temp.setAgepet(ReqPetList.get(i).getAgepet());
+                    temp.setGenderpet(ReqPetList.get(i).getGenderPet());
+
+                    doTakeTablResponces.add(temp);
+                }
+            }
+        }
+
+        return Response.ok(doTakeTablResponces).build();
+
     }
 
     /**
@@ -549,35 +682,166 @@ public class Gate {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/doTakeReq")
-    public Response doTakeReq(Integer state) {
-        List<PanacheEntityBase> reqTakeList;
-        switch (state){
-            case 0:
-                reqTakeList = ReqPetEntity.listAll();
-                break;
-            case 1:
-                reqTakeList = ReqPetEntity.list("active", true);
-                break;
-            case 2:
-                reqTakeList = ReqPetEntity.list("active", false);
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + state);
+    public Response doTakeReq(doTakeTablRequest tablReq) {
+        ArrayList<doTakeTablResponce> doTakeTablResponces = new ArrayList<>();
+
+    if (tablReq.getSearch().equals("any") == false ) {
+        System.out.println("1");
+        int IDuser = searchUser(tablReq.getSearch());
+        System.out.println();
+        ArrayList<ReqPetEntity> ReqPetList;
+
+        ReqPetList = (ArrayList<ReqPetEntity>) entityManager.createNamedQuery("ReqPetEntity.findreqUserId", ReqPetEntity.class)
+                .setParameter("userId", IDuser).setParameter("status", tablReq.getSelected())
+                .getResultList();
+        System.out.println( "--------"+ReqPetList.size());
+        for (int i = 0; i < ReqPetList.size(); i++) {
+
+            doTakeTablResponce temp = new doTakeTablResponce();
+            UsersEntity user = new UsersEntity();
+            PetsEntity pet = new PetsEntity();
+            user = UsersEntity.findById(ReqPetList.get(i).getUserId());
+            temp.setLogin(user.getLogin());
+            temp.setEmail(user.getEmail());
+            temp.setNameuser(user.getFirstname());
+            temp.setPhone(user.getTelephone());
+            pet = PetsEntity.findById(ReqPetList.get(i).getPetId());
+            temp.setTypepet(pet.getType());
+            temp.setNamepet(pet.getName());
+            temp.setAgepet(pet.getAge());
+            temp.setGenderpet(pet.getGender());
+            doTakeTablResponces.add(temp);
         }
-        return Response.ok(reqTakeList).build();
+
+    }
+    else{
+        if (tablReq.getSearch().equals("any") == true){
+            System.out.println("2");
+            ArrayList<ReqPetEntity> ReqPetList;
+            ReqPetList = (ArrayList<ReqPetEntity>) entityManager.createNamedQuery("ReqPetEntity.findreqStatus", ReqPetEntity.class)
+                    .setParameter("status", tablReq.getSelected())
+                    .getResultList();
+
+            for (int i = 0; i < ReqPetList.size(); i++) {
+                doTakeTablResponce temp = new doTakeTablResponce();
+                UsersEntity user = new UsersEntity();
+                PetsEntity pet = new PetsEntity();
+                System.out.println(ReqPetList.get(i).getPets());
+                user = UsersEntity.findById(ReqPetList.get(i).getUserId());
+                temp.setLogin(user.getLogin());
+                temp.setEmail(user.getEmail());
+                temp.setNameuser(user.getFirstname());
+                temp.setPhone(user.getTelephone());
+                pet = PetsEntity.findById(ReqPetList.get(i).getPetId());
+                temp.setTypepet(pet.getType());
+                temp.setNamepet(pet.getName());
+                temp.setAgepet(pet.getAge());
+                temp.setGenderpet(pet.getGender());
+                temp.setIschild(ReqPetList.get(i).getChild());
+                temp.setIspet(ReqPetList.get(i).getPets());
+                temp.setIshouse(ReqPetList.get(i).getIsHouse());
+                doTakeTablResponces.add(temp);
+            }
+        }
+    }
+
+        return Response.ok(doTakeTablResponces).build();
+
     }
 
 
-/*
-    @GET
+    /**
+     * Установка значения с активного на архивное у пользователя
+     * @param login
+     * @return
+     */
+    @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Path("/get")
-    @Transactional
-    public List<PetsEntity> get() {
-        return PetsEntity.listAll();
-    }*/
+    @Path("/setUserInArchive")
+    public Response setUserInArchive(String login) {
+        UsersEntity user = new UsersEntity();
+        int id = searchUser(login);
+        user = PetsEntity.findById(id);
+        user.setActive(false);
+        return Response.ok(user).build();
+    }
 
+    /**
+     * Установка значения статуса у заявки на забор  take питомца
+     * @param id
+     * @param status
+     * @return
+     */
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/setReqStatus")
+    public Response setReqStatus(int id, String status) {
+        ReqPetEntity reqPet = new ReqPetEntity();
+        reqPet = PetsEntity.findById(id);
+        reqPet.setStatus(status);
+        return Response.ok(reqPet).build();
+    }
+
+    /**
+     * Установка значения статуса у заявки на отдачу  give питомца
+     * @param id
+     *  @param status
+     * @return
+     */
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/setReqStatusGive")
+    public Response setReqStatusGive(int id, String status) {
+        ReqGivePetEntity reqPet = new ReqGivePetEntity();
+        reqPet = PetsEntity.findById(id);
+        reqPet.setStatus(status);
+        return Response.ok(reqPet).build();
+    }
+
+    /**
+     * Установка значения с активного на архивное у питомца
+     * @param id
+     * @return
+     */
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/setUserInArchive")
+    public Response setUserInArchive(int id) {
+        PetsEntity pet = new PetsEntity();
+
+        pet = PetsEntity.findById(id);
+        pet.setActive(false);
+        return Response.ok(pet).build();
+    }
+
+    /**
+     * Поиск пользователей по логину и статусу
+     * @param   login
+     * @param state
+     * @return
+     */
+    public int searchUserLogState(String login, String state)
+    {
+        boolean isActive;
+        if (state.equals("active")){
+            isActive = true;
+        } else isActive = false;
+        ArrayList<UsersEntity> en;
+        en = (ArrayList<UsersEntity>) entityManager.createNamedQuery("UsersEntity.findloginStat", UsersEntity.class)
+                .setParameter("login", login).setParameter("active", isActive)
+                .getResultList();
+        return en.size();
+    }
+
+    /**
+     * Поиск пользователя по логину
+     * @param login
+     * @return
+     */
     public Integer searchUser(String login)
     {
 
@@ -587,7 +851,7 @@ public class Gate {
                 .setParameter("login", login)
                 .getResultList();//.toArray(new UsersEntity[0]);
         if (en == null) {
-            return -1;
+            return 0;
         }
 
         return en.get(0).getUserId();
@@ -602,7 +866,7 @@ public class Gate {
      * @return
      */
     public ArrayList<PetsEntity> getPets(String type, String gender, Integer age, Boolean active){
-        System.out.println("tesgdg");
+        ArrayList<PetsEntity> en;
         Integer ageL = 0;
         Integer ageH = 100;
         switch (age){
@@ -627,14 +891,32 @@ public class Gate {
                 ageH = 100;
                 break;
         }
-        System.out.println("aaa");
+        if (gender.equals("any") && !(type.equals("any"))){
+            en =(ArrayList<PetsEntity>) entityManager.createNamedQuery("PetsEntity.getPetA", PetsEntity.class)
+                    .setParameter("active", active)
+                    .setParameter("type", type).setParameter("ageh", ageH)
+                    .setParameter("agel", ageL).getResultList();
+            return en;
+        }
+        if (type.equals("any") && !(gender.equals("any"))){
+            en =(ArrayList<PetsEntity>) entityManager.createNamedQuery("PetsEntity.getPetB", PetsEntity.class)
+                    .setParameter("active", active).setParameter("ageh", ageH)
+                    .setParameter("agel", ageL).setParameter("gender", gender)
+                    .getResultList();
+            return en;
+        }
+        if ((gender.equals("any")) && (type.equals("any"))){
+            en =(ArrayList<PetsEntity>) entityManager.createNamedQuery("PetsEntity.getPetC", PetsEntity.class)
+                    .setParameter("active", active).setParameter("ageh", ageH)
+                    .setParameter("agel", ageL).getResultList();
+            return en;
+        }else{
+            en =(ArrayList<PetsEntity>) entityManager.createNamedQuery("PetsEntity.getPetD", PetsEntity.class)
+            .setParameter("active", active).setParameter("type", type)
+                    .setParameter("ageh", ageH).setParameter("agel", ageL)
+                    .setParameter("gender", gender).getResultList();
+            return en;
+        }
 
-        ArrayList<PetsEntity> en;
-                en =(ArrayList<PetsEntity>) entityManager.createNamedQuery("PetsEntity.getPet", PetsEntity.class)
-                .setParameter("active", active).setParameter("type", type).setParameter("ageh", ageH)
-                .setParameter("agel", ageL).setParameter("gender", gender)
-                .getResultList();
-        System.out.println(en.size());
-        return en;
     }
 }

@@ -11,13 +11,23 @@ import javax.persistence.*;
         {
             @NamedQuery(name = "PetsEntity.getall",
                     query = "SELECT f FROM PetsEntity f "),
-            @NamedQuery(name = "PetsEntity.getPet",
+            @NamedQuery(name = "PetsEntity.getPetA",
+                    query = "SELECT f FROM PetsEntity f WHERE f.type = :type AND" +
+                            " f.age >= :agel AND f.age <= :ageh AND f.active = :active"),
+            @NamedQuery(name = "PetsEntity.getPetB",
+                    query = "SELECT f FROM PetsEntity f WHERE f.gender = :gender AND" +
+                            " f.age >= :agel AND f.age <= :ageh AND f.active = :active"),
+            @NamedQuery(name = "PetsEntity.getPetC",
+                    query = "SELECT f FROM PetsEntity f WHERE f.age >= :agel AND f.age <= :ageh AND f.active = :active"),
+            @NamedQuery(name = "PetsEntity.getPetD",
                     query = "SELECT f FROM PetsEntity f WHERE f.type = :type AND f.gender = :gender AND" +
                             " f.age >= :agel AND f.age <= :ageh AND f.active = :active"),
             @NamedQuery(name = "PetsEntity.deletePets",
                     query = "DELETE FROM PetsEntity g WHERE g.petId = :petId"),
-                @NamedQuery(name = "PetsEntity.getPetfromID",
-                        query = "SELECT a.name, a.type FROM PetsEntity a WHERE a.petId = :petId")
+            @NamedQuery(name = "PetsEntity.getPetfromID",
+                    query = "SELECT a.name, a.type FROM PetsEntity a WHERE a.petId = :petId"),
+            @NamedQuery(name = "PetsEntity.getPetstate",
+                    query = "SELECT f FROM PetsEntity f WHERE f.active = :active")
         }
 )
 
@@ -31,7 +41,6 @@ public class PetsEntity extends PanacheEntity {
     private String gender;
     private String photo;
     private Boolean active;
-
 
     @Basic
     @Column(name = "active")

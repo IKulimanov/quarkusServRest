@@ -10,6 +10,10 @@ import java.sql.Date;
 @NamedQueries({
         @NamedQuery(name = "ReqPetEntity.getall",
                 query = "SELECT x FROM PetsEntity x "),
+        @NamedQuery(name = "ReqPetEntity.findreqUserId",
+                query = "SELECT v FROM ReqPetEntity v WHERE v.userId = :userId AND v.status = :status"),
+        @NamedQuery(name = "ReqPetEntity.findreqStatus",
+                query = "SELECT v FROM ReqPetEntity v WHERE v.status = :status"),
         @NamedQuery(name = "ReqPetEntity.findreq",
                 query = "SELECT z.petId,z.status FROM ReqPetEntity z WHERE z.userId = :id_user AND z.active =: active")
 })
@@ -25,7 +29,7 @@ public class ReqPetEntity extends PanacheEntity {
     private Boolean active;
     private int userId;
     private int petId;
-    private Integer status;
+    private String status;
 
     @Basic
     @Column(name = "user_id")
@@ -49,11 +53,11 @@ public class ReqPetEntity extends PanacheEntity {
 
     @Basic
     @Column(name = "status")
-    public Integer getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

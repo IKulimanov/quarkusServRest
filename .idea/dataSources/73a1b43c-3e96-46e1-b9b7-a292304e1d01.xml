@@ -3,17 +3,17 @@
   <database-model serializer="dbm" dbms="POSTGRES" family-id="POSTGRES" format-version="4.17">
     <root id="1">
       <ServerVersion>10.10</ServerVersion>
-      <StartupTime>1581157580</StartupTime>
+      <StartupTime>1581415948</StartupTime>
     </root>
     <database id="2" parent="1" name="postgres">
       <ObjectId>13057</ObjectId>
       <Comment>default administrative connection database</Comment>
       <Owner>postgres</Owner>
-      <IntrospectionStateNumber>733</IntrospectionStateNumber>
+      <IntrospectionStateNumber>777</IntrospectionStateNumber>
       <Current>1</Current>
-      <Relations>sequence|table|16384|16386|1
-sequence|table|16405|16407|1
+      <Relations>sequence|table|16405|16407|1
 sequence|table|16414|16416|1
+sequence|table|16384|16386|1
 </Relations>
     </database>
     <role id="3" parent="1" name="pg_monitor">
@@ -56,7 +56,7 @@ sequence|table|16414|16416|1
       <Comment>standard public schema</Comment>
       <StateNumber>351</StateNumber>
       <Owner>postgres</Owner>
-      <IntrospectionStateNumber>734</IntrospectionStateNumber>
+      <IntrospectionStateNumber>778</IntrospectionStateNumber>
       <Current>1</Current>
     </schema>
     <access-method id="12" parent="2" name="btree">
@@ -147,17 +147,17 @@ sequence|table|16414|16416|1
     <table id="23" parent="11" name="req_give_pet">
       <ObjectId>32773</ObjectId>
       <Owner>postgres</Owner>
-      <StateNumber>726</StateNumber>
+      <StateNumber>758</StateNumber>
     </table>
     <table id="24" parent="11" name="req_pet">
       <ObjectId>16416</ObjectId>
       <Owner>postgres</Owner>
-      <StateNumber>729</StateNumber>
+      <StateNumber>755</StateNumber>
     </table>
     <table id="25" parent="11" name="users">
       <ObjectId>16386</ObjectId>
       <Owner>postgres</Owner>
-      <StateNumber>708</StateNumber>
+      <StateNumber>745</StateNumber>
     </table>
     <column id="26" parent="22" name="pet_id">
       <Position>1</Position>
@@ -193,8 +193,8 @@ sequence|table|16414|16416|1
     </column>
     <column id="31" parent="22" name="photo">
       <Position>7</Position>
-      <DataType>varchar(255)|0s</DataType>
-      <StateNumber>687</StateNumber>
+      <DataType>varchar(500)|0s</DataType>
+      <StateNumber>776</StateNumber>
       <TypeId>1043</TypeId>
     </column>
     <column id="32" parent="22" name="active">
@@ -270,13 +270,13 @@ sequence|table|16414|16416|1
     </column>
     <column id="43" parent="23" name="status">
       <Position>8</Position>
-      <DataType>integer|0s</DataType>
-      <StateNumber>726</StateNumber>
-      <TypeId>23</TypeId>
+      <DataType>varchar(255)|0s</DataType>
+      <StateNumber>758</StateNumber>
+      <TypeId>1043</TypeId>
     </column>
     <index id="44" parent="23" name="req_give_pet_pk">
       <ObjectId>32779</ObjectId>
-      <StateNumber>714</StateNumber>
+      <StateNumber>758</StateNumber>
       <ColNames>id_req_gp</ColNames>
       <Unique>1</Unique>
       <Primary>1</Primary>
@@ -341,13 +341,13 @@ sequence|table|16414|16416|1
     </column>
     <column id="54" parent="24" name="status">
       <Position>9</Position>
-      <DataType>integer|0s</DataType>
-      <StateNumber>729</StateNumber>
-      <TypeId>23</TypeId>
+      <DataType>varchar(255)|0s</DataType>
+      <StateNumber>755</StateNumber>
+      <TypeId>1043</TypeId>
     </column>
     <index id="55" parent="24" name="req_pet_pkey">
       <ObjectId>16421</ObjectId>
-      <StateNumber>717</StateNumber>
+      <StateNumber>755</StateNumber>
       <ColNames>reqpet_id</ColNames>
       <Unique>1</Unique>
       <Primary>1</Primary>
@@ -395,15 +395,15 @@ sequence|table|16414|16416|1
     </column>
     <column id="61" parent="25" name="hashsum">
       <Position>2</Position>
-      <DataType>varchar(100)|0s</DataType>
-      <StateNumber>555</StateNumber>
-      <TypeId>1043</TypeId>
+      <DataType>integer|0s</DataType>
+      <StateNumber>746</StateNumber>
+      <TypeId>23</TypeId>
     </column>
     <column id="62" parent="25" name="telephone">
       <Position>4</Position>
-      <DataType>varchar(20)|0s</DataType>
-      <StateNumber>555</StateNumber>
-      <TypeId>1043</TypeId>
+      <DataType>integer|0s</DataType>
+      <StateNumber>742</StateNumber>
+      <TypeId>23</TypeId>
     </column>
     <column id="63" parent="25" name="email">
       <Position>5</Position>
@@ -456,7 +456,7 @@ sequence|table|16414|16416|1
     </column>
     <index id="71" parent="25" name="users_pkey">
       <ObjectId>16391</ObjectId>
-      <StateNumber>708</StateNumber>
+      <StateNumber>745</StateNumber>
       <ColNames>user_id</ColNames>
       <Unique>1</Unique>
       <Primary>1</Primary>
